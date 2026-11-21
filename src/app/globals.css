@@ -1,0 +1,260 @@
+@import "tailwindcss";
+
+/* FITTRACK — cyberpunk red & black. Dark only. */
+:root {
+  color-scheme: dark;
+  --bg: #050000;
+  --surface: rgba(18, 2, 5, 0.82);
+  --surface-2: rgba(40, 4, 10, 0.88);
+  --border: #4a0d1a; /* quiet deep-red hairline */
+  --text: #ffe5e8;
+  --text-2: #ff9aa8;
+  --muted: #b0475a;
+  --accent: #ff003c;
+  --accent-soft: rgba(255, 0, 60, 0.16);
+  --danger: #ff2d55;
+  --good: #00ffcc; /* cyber cyan */
+
+  /* Macro series */
+  --protein: #ff003c;
+  --carbs: #ff2bd6;
+  --fat: #00e5ff;
+  --fiber: #ffe600;
+
+  --cut: 12px; /* notch size for clipped panels */
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--border);
+  --color-ink: var(--text);
+  --color-ink-2: var(--text-2);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-danger: var(--danger);
+  --color-good: var(--good);
+  --color-protein: var(--protein);
+  --color-carbs: var(--carbs);
+  --color-fat: var(--fat);
+  --color-fiber: var(--fiber);
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-display: var(--font-orbitron), var(--font-inter), system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+}
+
+html {
+  background: var(--bg);
+}
+
+body {
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(255, 0, 60, 0.18), transparent 70%),
+    linear-gradient(rgba(5, 0, 0, 0.9), rgba(5, 0, 0, 0.96)),
+    url("/cyberpunk_bg.jpg") center / cover fixed no-repeat,
+    var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* CRT scanlines over everything; purely decorative. */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+  background: repeating-linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 3px);
+}
+
+::selection {
+  background: var(--accent);
+  color: #000;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #5a0a1c transparent;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+select {
+  color-scheme: dark;
+}
+
+.pb-safe {
+  padding-bottom: max(env(safe-area-inset-bottom), 0px);
+}
+
+/* ---------- Notched panels ----------
+   clip-path trims the top-right and bottom-left corners; ::before redraws
+   the border along each diagonal so the outline stays continuous. */
+@utility cut {
+  position: relative;
+  clip-path: polygon(0 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, var(--cut) 100%, 0 calc(100% - var(--cut)));
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    --d: linear-gradient(to top right, transparent calc(50% - 1px), var(--cut-color, var(--border)) calc(50% - 1px), var(--cut-color, var(--border)) calc(50% + 0.5px), transparent calc(50% + 0.5px));
+    background: var(--d) right top / var(--cut) var(--cut) no-repeat, var(--d) left bottom / var(--cut) var(--cut) no-repeat;
+  }
+}
+@utility cut-sm {
+  --cut: 7px;
+}
+@utility cut-lg {
+  --cut: 20px;
+}
+
+/* ---------- Selected / idle chips (replaces white fills) ---------- */
+@utility chip-on {
+  --cut-color: var(--accent);
+  border-color: var(--accent);
+  background: rgba(255, 0, 60, 0.18);
+  color: #ff4d6d;
+  box-shadow: inset 0 0 14px rgba(255, 0, 60, 0.35);
+  text-shadow: 0 0 8px rgba(255, 0, 60, 0.7);
+}
+@utility chip-off {
+  border-color: var(--border);
+  background: rgba(40, 4, 10, 0.6);
+  color: var(--text-2);
+  &:hover {
+    --cut-color: rgba(255, 0, 60, 0.6);
+    border-color: rgba(255, 0, 60, 0.6);
+    color: var(--text);
+  }
+}
+
+@utility text-glow {
+  text-shadow: 0 0 10px rgba(255, 0, 60, 0.75), 0 0 28px rgba(255, 0, 60, 0.35);
+}
+@utility text-glow-cyan {
+  text-shadow: 0 0 10px rgba(0, 255, 204, 0.7);
+}
+
+/* Four L-shaped corner brackets (HUD frame). Use on unclipped elements. */
+@utility hud {
+  --hud: var(--accent);
+  --hud-l: linear-gradient(var(--hud), var(--hud));
+  background-image: var(--hud-l), var(--hud-l), var(--hud-l), var(--hud-l), var(--hud-l), var(--hud-l), var(--hud-l), var(--hud-l);
+  background-repeat: no-repeat;
+  background-position: left top, left top, right top, right top, left bottom, left bottom, right bottom, right bottom;
+  background-size: 14px 2px, 2px 14px, 14px 2px, 2px 14px, 14px 2px, 2px 14px, 14px 2px, 2px 14px;
+}
+
+/* Perspective neon floor grid. */
+@utility grid-floor {
+  background-image:
+    linear-gradient(rgba(255, 0, 60, 0.35) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 0, 60, 0.35) 1px, transparent 1px);
+  background-size: 48px 48px;
+  transform: perspective(420px) rotateX(62deg);
+  transform-origin: center top;
+  mask-image: linear-gradient(to bottom, #000 0%, transparent 85%);
+  animation: floor 3s linear infinite;
+}
+
+/* ---------- Glitch heading ----------
+   <h1 class="glitch" data-text="SAME TEXT">SAME TEXT</h1> */
+.glitch {
+  position: relative;
+}
+.glitch::before,
+.glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.8;
+}
+.glitch::before {
+  color: #00fff0;
+  transform: translate(-2px, 0);
+  clip-path: inset(0 0 60% 0);
+  mix-blend-mode: screen;
+  animation: glitch-a 3.2s infinite steps(1);
+}
+.glitch::after {
+  color: #ff003c;
+  transform: translate(2px, 0);
+  clip-path: inset(55% 0 0 0);
+  mix-blend-mode: screen;
+  animation: glitch-b 2.7s infinite steps(1);
+}
+
+@keyframes glitch-a {
+  0%, 88%, 100% { transform: translate(-2px, 0); clip-path: inset(0 0 60% 0); }
+  90% { transform: translate(-6px, 1px); clip-path: inset(10% 0 70% 0); }
+  93% { transform: translate(4px, -1px); clip-path: inset(40% 0 30% 0); }
+  96% { transform: translate(-3px, 0); clip-path: inset(70% 0 5% 0); }
+}
+@keyframes glitch-b {
+  0%, 85%, 100% { transform: translate(2px, 0); clip-path: inset(55% 0 0 0); }
+  87% { transform: translate(6px, -1px); clip-path: inset(20% 0 55% 0); }
+  91% { transform: translate(-4px, 1px); clip-path: inset(65% 0 10% 0); }
+  95% { transform: translate(3px, 0); clip-path: inset(5% 0 80% 0); }
+}
+
+@keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+.animate-rise { animation: rise 0.4s ease both; }
+
+@keyframes sheet { from { transform: translateY(100%); } to { transform: none; } }
+.animate-sheet { animation: sheet 0.28s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+
+@keyframes floor { from { background-position: 0 0; } to { background-position: 0 48px; } }
+
+@keyframes scan { 0% { top: 0%; } 50% { top: 100%; } 100% { top: 0%; } }
+.animate-scan { animation: scan 2.4s ease-in-out infinite; }
+
+@keyframes pulse-ring { 0% { transform: scale(1); opacity: 0.7; } 100% { transform: scale(1.5); opacity: 0; } }
+.animate-pulse-ring { animation: pulse-ring 1.8s ease-out infinite; }
+@keyframes pulse-soft { 0% { transform: scale(1); opacity: 0.6; } 100% { transform: scale(1.08, 1.25); opacity: 0; } }
+.animate-pulse-soft { animation: pulse-soft 2s ease-out infinite; }
+
+@keyframes flicker {
+  0%, 19%, 21%, 23%, 54%, 56%, 100% { opacity: 1; }
+  20%, 22%, 55% { opacity: 0.35; }
+}
+.animate-flicker { animation: flicker 4s linear infinite; }
+
+@keyframes blink { 50% { opacity: 0; } }
+.animate-blink { animation: blink 1s steps(1) infinite; }
+
+@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.animate-marquee { animation: marquee 30s linear infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .glitch::before, .glitch::after, .animate-scan, .animate-pulse-ring, .animate-pulse-soft, .animate-flicker, .animate-marquee, .grid-floor {
+    animation: none !important;
+  }
+}
+
+@keyframes load-bar { from { left: -33%; } to { left: 100%; } }
+.animate-load { animation: load-bar 1.1s ease-in-out infinite; }
+
+/* Completed state (workout done etc.) — cyan instead of red. */
+@utility done {
+  --cut-color: var(--good);
+  border-color: var(--good);
+  background: rgba(0, 255, 204, 0.1);
+  color: var(--good);
+  text-shadow: 0 0 8px rgba(0, 255, 204, 0.6);
+  &:hover {
+    --cut-color: var(--good);
+    border-color: var(--good);
+    background: rgba(0, 255, 204, 0.16);
+    color: var(--good);
+  }
+}

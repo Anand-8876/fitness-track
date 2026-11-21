@@ -1,0 +1,139 @@
+// SQLite for zero-setup local dev. To move to Postgres, change `provider`
+// to "postgresql" and point DATABASE_URL at your database.
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  createdAt    DateTime @default(now())
+
+  profile         Profile?
+  sessions        Session[]
+  physiquePhotos  PhysiquePhoto[]
+  foodEntries     FoodEntry[]
+  weightLogs      WeightLog[]
+  waterLogs       WaterLog[]
+  workoutPlan     WorkoutPlan?
+  workoutLogs     WorkoutLog[]
+}
+
+model Profile {
+  userId    String @id
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sex       String // male | female | other
+  age       Int
+  heightCm  Float
+  weightKg  Float
+  goal      String // lose | maintain | gain
+  activity  String // sedentary | light | moderate | active | athlete
+  diet      String // veg | eggitarian | nonveg | vegan
+
+  // Daily targets (auto-calculated; user may override)
+  targetKcal    Int
+  targetProtein Int
+  targetCarbs   Int
+  targetFat     Int
+  targetFiber   Int
+  waterGoal     Int @default(8)
+
+  // From AI physique analysis (optional)
+  bodyFatPct     Float?
+  physiqueReport String? // JSON of the latest analysis
+
+  updatedAt DateTime @updatedAt
+}
+
+// Every login creates a row. The cookie holds a random token; only its
+// SHA-256 hash is stored, so a DB leak can't be replayed as a session.
+model Session {
+  id         String   @id @default(cuid())
+  tokenHash  String   @unique
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userAgent  String?
+  ip         String?
+  createdAt  DateTime @default(now())
+  lastUsedAt DateTime @default(now())
+  expiresAt  DateTime
+  revokedAt  DateTime?
+
+  @@index([userId])
+}
+
+model PhysiquePhoto {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pose      String // front | side | back | other
+  filePath  String
+  mimeType  String
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model FoodEntry {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date      String // YYYY-MM-DD in the user's local time
+  meal      String // breakfast | lunch | snack | dinner
+  name      String
+  portion   String?
+  grams     Float?
+  kcal      Float
+  protein   Float
+  carbs     Float
+  fat       Float
+  fiber     Float    @default(0)
+  source    String // photo | text | manual
+  photoPath String?
+  createdAt DateTime @default(now())
+
+  @@index([userId, date])
+}
+
+model WeightLog {
+  id       String   @id @default(cuid())
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date     String
+  weightKg Float
+  createdAt DateTime @default(now())
+
+  @@unique([userId, date])
+}
+
+model WaterLog {
+  userId  String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date    String
+  glasses Int    @default(0)
+
+  @@id([userId, date])
+}
+
+model WorkoutPlan {
+  userId String @id
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  split  String // JSON: Record<Day, DayPlan>
+}
+
+model WorkoutLog {
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date   String
+  done   Boolean @default(false)
+  notes  String?
+
+  @@id([userId, date])
+}

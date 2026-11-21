@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="description" content="Fitness Tracker – Personalized BMI, meal plans, custom workout splits, calendar and weekly check-ins.">
+    <title>Fitness Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ═══════════════════ ONBOARDING ═══════════════════ -->
+<div id="onboarding-overlay" class="overlay">
+    <div class="modal" id="onboarding-modal">
+        <div class="modal-brand"><span class="brand-dot"></span>FITNESS TRACKER</div>
+        <h1 class="modal-title">BUILD YOUR PROFILE</h1>
+        <p class="modal-sub">Your data stays on your device. Always.</p>
+        <form id="onboarding-form" novalidate>
+            <fieldset class="fs">
+                <legend>BODY STATS</legend>
+                <div class="fg2">
+                    <div class="ig"><label>BIOLOGICAL SEX</label>
+                        <select id="g-gender"><option value="male">Male</option><option value="female">Female</option><option value="other">Other</option></select>
+                    </div>
+                    <div class="ig"><label>AGE <span class="u">yrs</span></label><input type="number" id="g-age" min="10" max="100" placeholder="25" required></div>
+                    <div class="ig"><label>HEIGHT <span class="u">cm</span></label><input type="number" id="g-height" min="100" max="250" placeholder="175" required></div>
+                    <div class="ig"><label>WEIGHT <span class="u">kg</span></label><input type="number" id="g-weight" min="30" max="300" placeholder="70" required></div>
+                </div>
+            </fieldset>
+            <fieldset class="fs">
+                <legend>GOALS & PREFERENCES</legend>
+                <div class="fg1">
+                    <div class="ig"><label>FITNESS GOAL</label>
+                        <div class="pills" id="goal-pills">
+                            <button type="button" class="pill active" data-v="lose">🔥 Lose Weight</button>
+                            <button type="button" class="pill" data-v="maintain">⚖️ Maintain</button>
+                            <button type="button" class="pill" data-v="gain">💪 Gain Weight</button>
+                        </div>
+                        <input type="hidden" id="g-goal" value="lose">
+                    </div>
+                    <div class="ig"><label>DIET PREFERENCE</label>
+                        <div class="pills" id="diet-pills">
+                            <button type="button" class="pill active" data-v="veg">🥦 Vegetarian</button>
+                            <button type="button" class="pill" data-v="eggitarian">🥚 Eggitarian</button>
+                            <button type="button" class="pill" data-v="nonveg">🍗 Non-Veg</button>
+                        </div>
+                        <input type="hidden" id="g-diet" value="veg">
+                    </div>
+                    <div class="ig"><label>WORKOUT PREFERENCE</label>
+                        <div class="pills" id="routine-pills">
+                            <button type="button" class="pill active" data-v="gym">🏋️ Gym Only</button>
+                            <button type="button" class="pill" data-v="cardio">🏃 Cardio Only</button>
+                            <button type="button" class="pill" data-v="both">⚡ Both</button>
+                        </div>
+                        <input type="hidden" id="g-routine" value="gym">
+                    </div>
+                </div>
+            </fieldset>
+            <div class="form-err hidden" id="form-err">Please fill all fields correctly.</div>
+            <button type="submit" class="btn btn-primary btn-full">GENERATE MY PLAN →</button>
+        </form>
+    </div>
+</div>
+
+<!-- ═══════════════════ WEIGHT CHECK-IN MODAL ═══════════════════ -->
+<div id="weight-modal" class="overlay hidden">
+    <div class="modal modal-sm">
+        <div class="modal-brand"><span class="brand-dot"></span>WEEKLY CHECK-IN</div>
+        <h2 class="modal-title" style="font-size:1.3rem">Log Your Weight</h2>
+        <p class="modal-sub">It's been a week! Tracking weight helps measure real progress.</p>
+        <div class="ig mt16">
+            <label>CURRENT WEIGHT <span class="u">kg</span></label>
+            <input type="number" id="wi-weight" min="30" max="300" placeholder="e.g. 70.5" step="0.1">
+        </div>
+        <div class="modal-actions mt16">
+            <button class="btn btn-ghost" id="wi-skip">Remind Later</button>
+            <button class="btn btn-primary" id="wi-save">SAVE WEIGHT</button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════ DAY LOG MODAL ═══════════════════ -->
+<div id="log-modal" class="overlay hidden">
+    <div class="modal modal-sm">
+        <div class="log-modal-header">
+            <div>
+                <div class="modal-brand"><span class="brand-dot"></span>DAY LOG</div>
+                <h2 class="modal-title" style="font-size:1.2rem" id="log-modal-date">—</h2>
+            </div>
+            <button class="btn-icon" id="close-log-modal">✕</button>
+        </div>
+        <div id="log-modal-body" class="log-modal-body">
+            <!-- Rendered by JS -->
+        </div>
+        <div class="modal-actions mt16">
+            <button class="btn btn-ghost" id="log-cancel">Cancel</button>
+            <button class="btn btn-primary" id="log-save">SAVE LOG</button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════ SPLIT BUILDER MODAL ═══════════════════ -->
+<div id="split-modal" class="overlay hidden">
+    <div class="modal modal-lg">
+        <div class="log-modal-header">
+            <div>
+                <div class="modal-brand"><span class="brand-dot"></span>SPLIT BUILDER</div>
+                <h2 class="modal-title" style="font-size:1.2rem">Customize Your Week</h2>
+            </div>
+            <button class="btn-icon" id="close-split-modal">✕</button>
+        </div>
+        <p class="modal-sub mb16">Choose workout type and split for each day. Toggle days on/off.</p>
+        <div id="split-builder-body" class="split-builder-body">
+            <!-- 7 day rows rendered by JS -->
+        </div>
+        <div class="modal-actions mt16">
+            <button class="btn btn-ghost" id="split-cancel">Cancel</button>
+            <button class="btn btn-primary" id="split-save">SAVE SPLIT</button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════ ADD / EDIT MEAL MODAL ═══════════════════ -->
+<div id="meal-modal" class="overlay hidden">
+    <div class="modal modal-sm">
+        <div class="log-modal-header">
+            <div>
+                <div class="modal-brand"><span class="brand-dot"></span>MEAL LIBRARY</div>
+                <h2 class="modal-title" style="font-size:1.2rem" id="meal-modal-title">Add New Meal</h2>
+            </div>
+            <button class="btn-icon" id="close-meal-modal">✕</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+            <div class="fg2">
+                <div class="ig">
+                    <label>MEAL NAME <span style="color:#e53535">*</span></label>
+                    <input type="text" id="mm-name" placeholder="e.g. Palak Paneer">
+                </div>
+                <div class="ig">
+                    <label>MEAL SLOT</label>
+                    <select id="mm-slot">
+                        <option value="breakfast">🌅 Breakfast</option>
+                        <option value="lunch">☀️ Lunch</option>
+                        <option value="snack">🍵 Snack</option>
+                        <option value="dinner">🌙 Dinner</option>
+                    </select>
+                </div>
+            </div>
+            <div class="ig">
+                <label>DESCRIPTION</label>
+                <textarea id="mm-desc" placeholder="Ingredients, how it's made, or any notes..."></textarea>
+            </div>
+            <div class="fg2">
+                <div class="ig">
+                    <label>CALORIES <span class="u">kcal (approx)</span></label>
+                    <input type="number" id="mm-kcal" min="50" max="2000" placeholder="e.g. 350">
+                </div>
+                <div class="ig">
+                    <label>PROTEIN <span class="u">g (optional)</span></label>
+                    <input type="number" id="mm-protein" min="0" max="200" placeholder="e.g. 20">
+                </div>
+            </div>
+            <div class="ig">
+                <label>DIET TAG</label>
+                <div class="pills" id="mm-diet-pills">
+                    <button type="button" class="pill active" data-v="all">🌍 All Diets</button>
+                    <button type="button" class="pill" data-v="veg">🥦 Veg</button>
+                    <button type="button" class="pill" data-v="eggitarian">🥚 Eggi</button>
+                    <button type="button" class="pill" data-v="nonveg">🍗 Non-Veg</button>
+                </div>
+                <input type="hidden" id="mm-diet" value="all">
+            </div>
+            <div class="form-err hidden" id="mm-err">Please enter at least a meal name and calories.</div>
+        </div>
+        <div class="modal-actions mt16">
+            <button class="btn btn-ghost" id="mm-cancel">Cancel</button>
+            <button class="btn btn-primary" id="mm-save">SAVE MEAL</button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════ PICK MEAL MODAL ═══════════════════ -->
+<div id="pick-meal-modal" class="overlay hidden">
+    <div class="modal modal-sm">
+        <div class="log-modal-header">
+            <div>
+                <div class="modal-brand"><span class="brand-dot"></span>CHOOSE MEAL</div>
+                <h2 class="modal-title" style="font-size:1.2rem" id="pick-modal-title">Pick for Breakfast</h2>
+            </div>
+            <button class="btn-icon" id="close-pick-modal">✕</button>
+        </div>
+        <p class="modal-sub">Select from your saved meals or the default library for this slot.</p>
+        <div id="pick-meal-list" class="pick-meal-list">
+            <!-- Rendered by JS -->
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════ APP ═══════════════════ -->
+<div class="app hidden" id="app">
+
+    <!-- HEADER -->
+    <header class="header">
+        <div class="header-brand"><span class="brand-dot"></span><span>FITNESS TRACKER</span></div>
+        <div class="header-date" id="header-date"></div>
+        <div class="header-right">
+            <button class="btn btn-ghost-sm" id="btn-edit">✏ Edit</button>
+            <button class="btn btn-danger-sm" id="btn-reset">Reset</button>
+        </div>
+    </header>
+
+    <!-- NAV TABS -->
+    <nav class="nav-tabs">
+        <button class="nav-tab active" data-tab="dashboard">📊 Dashboard</button>
+        <button class="nav-tab" data-tab="calendar">📅 Calendar</button>
+        <button class="nav-tab" data-tab="split">🏋️ Split</button>
+        <button class="nav-tab" data-tab="meals">🍽️ Meals</button>
+        <button class="nav-tab" data-tab="progress">📈 Progress</button>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+
+        <!-- ── TAB: DASHBOARD ── -->
+        <div class="tab-pane active" id="tab-dashboard">
+            <div class="dash-grid">
+
+                <!-- Metrics Card -->
+                <div class="card card-metrics">
+                    <div class="card-label">METRICS</div>
+                    <div class="bmi-gauge-wrap">
+                        <svg class="bmi-svg" viewBox="0 0 200 115">
+                            <path d="M 15 110 A 85 85 0 0 1 185 110" fill="none" stroke="#1e1e1e" stroke-width="12" stroke-linecap="round"/>
+                            <path id="bmi-arc" d="M 15 110 A 85 85 0 0 1 185 110" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="round" stroke-dasharray="267" stroke-dashoffset="267" style="transition:stroke-dashoffset 1s ease,stroke 0.5s ease"/>
+                            <line id="bmi-needle" x1="100" y1="108" x2="100" y2="30" stroke="#fff" stroke-width="2" stroke-linecap="round" style="transform-origin:100px 108px;transform:rotate(-90deg);transition:transform 1s cubic-bezier(.17,.67,.83,.67)"/>
+                            <circle cx="100" cy="108" r="4" fill="#fff"/>
+                        </svg>
+                        <div class="bmi-center-val">
+                            <div class="bmi-num" id="bmi-num">--</div>
+                            <div class="bmi-sub">BMI</div>
+                        </div>
+                    </div>
+                    <div class="bmi-cat" id="bmi-cat">—</div>
+                    <div class="metric-sep"></div>
+                    <div class="cal-block">
+                        <div class="cal-label">DAILY CALORIES</div>
+                        <div class="cal-num" id="cal-num">—</div>
+                        <div class="cal-unit">kcal / day</div>
+                    </div>
+                    <div class="metric-sep"></div>
+                    <div class="chip-row">
+                        <span class="chip" id="c-goal">—</span>
+                        <span class="chip" id="c-diet">—</span>
+                        <span class="chip" id="c-routine">—</span>
+                    </div>
+                </div>
+
+                <!-- Today's Workout Card -->
+                <div class="card card-today">
+                    <div class="card-topbar">
+                        <div class="card-label">TODAY'S WORKOUT</div>
+                        <span class="today-day-badge" id="today-day-badge">—</span>
+                    </div>
+                    <div id="today-workout-content" class="today-workout-content">
+                        <!-- Rendered by JS -->
+                    </div>
+                </div>
+
+                <!-- Meal Plan Card -->
+                <div class="card card-meals">
+                    <div class="card-label">MEAL PLAN</div>
+                    <p class="card-sub" id="meals-sub">—</p>
+                    <div id="meals-list" class="meals-list"></div>
+                </div>
+
+                <!-- Checklist Card -->
+                <div class="card card-checklist">
+                    <div class="card-topbar">
+                        <div class="card-label">DAILY CHECKLIST</div>
+                        <span class="progress-badge" id="prog-badge">0/0</span>
+                    </div>
+                    <div class="prog-bar-wrap"><div class="prog-bar" id="prog-bar"></div></div>
+                    <div id="checklist-body" class="checklist-body"></div>
+                </div>
+
+                <!-- Water Card -->
+                <div class="card card-water">
+                    <div class="card-label">HYDRATION</div>
+                    <div class="water-num"><span id="water-cur">0</span><span class="water-sep">/</span>8 <span class="water-u">glasses</span></div>
+                    <div id="water-glasses" class="water-glasses"></div>
+                    <div class="water-btns">
+                        <button class="btn btn-outline-sm" id="water-minus">− Remove</button>
+                        <button class="btn btn-primary-sm" id="water-plus">+ Add</button>
+                    </div>
+                </div>
+
+                <!-- Streak Card -->
+                <div class="card card-streak">
+                    <div class="card-label">STREAK</div>
+                    <div class="streak-box">
+                        <div class="streak-fire">🔥</div>
+                        <div class="streak-num" id="streak-num">0</div>
+                        <div class="streak-text">DAY STREAK</div>
+                    </div>
+                    <div class="hist-title">RECENT</div>
+                    <ul class="hist-list" id="hist-list"><li class="hist-empty">No logs yet.</li></ul>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ── TAB: CALENDAR ── -->
+        <div class="tab-pane" id="tab-calendar">
+            <div class="cal-wrap">
+                <div class="cal-header">
+                    <button class="btn btn-ghost-sm" id="cal-prev">← Prev</button>
+                    <div class="cal-month-label" id="cal-month-label">—</div>
+                    <button class="btn btn-ghost-sm" id="cal-next">Next →</button>
+                </div>
+                <div class="cal-legend">
+                    <span class="leg-item"><span class="leg-dot ld-done"></span>Logged</span>
+                    <span class="leg-item"><span class="leg-dot ld-partial"></span>Partial</span>
+                    <span class="leg-item"><span class="leg-dot ld-absent"></span>Absent</span>
+                    <span class="leg-item"><span class="leg-dot ld-rest"></span>Rest Day</span>
+                    <span class="leg-item"><span class="leg-dot ld-future"></span>Upcoming</span>
+                </div>
+                <div class="cal-grid-wrap">
+                    <div class="cal-dow-row">
+                        <div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div><div>SUN</div>
+                    </div>
+                    <div class="cal-grid" id="cal-grid"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── TAB: SPLIT BUILDER ── -->
+        <div class="tab-pane" id="tab-split">
+            <div class="split-page-wrap">
+                <div class="split-page-header">
+                    <div>
+                        <h2 class="split-page-title">YOUR WORKOUT SPLIT</h2>
+                        <p class="split-page-sub">Customize each day of the week. Mix gym, cardio, and rest days.</p>
+                    </div>
+                    <button class="btn btn-primary" id="btn-open-split-builder">✏ Customize Split</button>
+                </div>
+                <div class="split-week-grid" id="split-week-grid">
+                    <!-- Rendered by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ── TAB: PROGRESS ── -->
+        <div class="tab-pane" id="tab-progress">
+            <div class="progress-wrap">
+                <div class="prog-cards-row">
+                    <div class="card prog-stat-card">
+                        <div class="card-label">CURRENT BMI</div>
+                        <div class="prog-stat-val" id="prog-bmi">—</div>
+                    </div>
+                    <div class="card prog-stat-card">
+                        <div class="card-label">CURRENT WEIGHT</div>
+                        <div class="prog-stat-val" id="prog-weight">—<span class="prog-unit">kg</span></div>
+                    </div>
+                    <div class="card prog-stat-card">
+                        <div class="card-label">TOTAL DAYS LOGGED</div>
+                        <div class="prog-stat-val" id="prog-days">—</div>
+                    </div>
+                    <div class="card prog-stat-card">
+                        <div class="card-label">BEST STREAK</div>
+                        <div class="prog-stat-val" id="prog-best-streak">—<span class="prog-unit">days</span></div>
+                    </div>
+                </div>
+
+                <!-- Weight History -->
+                <div class="card mt20">
+                    <div class="card-topbar">
+                        <div class="card-label">WEIGHT HISTORY</div>
+                        <button class="btn btn-ghost-sm" id="btn-log-weight">+ Log Weight</button>
+                    </div>
+                    <div id="weight-chart" class="weight-chart">
+                        <!-- SVG chart rendered by JS -->
+                    </div>
+                    <div id="weight-table" class="weight-table"></div>
+                </div>
+
+                <!-- Full History Log -->
+                <div class="card mt20">
+                    <div class="card-label">FULL ACTIVITY LOG</div>
+                    <div id="full-history" class="full-history"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── TAB: MEALS ── -->
+        <div class="tab-pane" id="tab-meals">
+            <div class="meals-page-wrap">
+
+                <!-- Today's Meal Plan -->
+                <div class="meals-page-header">
+                    <div>
+                        <h2 class="split-page-title">MEAL PLAN</h2>
+                        <p class="split-page-sub">Today's calorie-matched Indian meal plan based on your diet preference.</p>
+                    </div>
+                    <div class="meals-mode-toggle">
+                        <button class="tab active" id="mode-auto" data-mode="auto">🤖 Auto Plan</button>
+                        <button class="tab" id="mode-custom" data-mode="custom">✏️ Custom Plan</button>
+                    </div>
+                </div>
+
+                <!-- Today's 4 meal slots -->
+                <div class="meal-slots-grid" id="meal-slots-grid">
+                    <!-- Rendered by JS -->
+                </div>
+
+                <!-- My Meals Library -->
+                <div class="card mt20">
+                    <div class="card-topbar">
+                        <div class="card-label">MY MEALS LIBRARY</div>
+                        <button class="btn btn-primary" id="btn-add-meal">+ Add Meal</button>
+                    </div>
+                    <p class="card-sub" style="margin-top:-4px">Save your favourite meals and assign them to any slot in your daily plan.</p>
+                    <div id="my-meals-library" class="my-meals-library">
+                        <!-- Rendered by JS -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MOBILE BOTTOM NAV -->
+    <nav class="bottom-nav" style="grid-template-columns:repeat(5,1fr)">
+        <button class="bnav-btn active" data-tab="dashboard">
+            <span class="bnav-icon">📊</span>
+            <span class="bnav-label">Home</span>
+        </button>
+        <button class="bnav-btn" data-tab="calendar">
+            <span class="bnav-icon">📅</span>
+            <span class="bnav-label">Calendar</span>
+        </button>
+        <button class="bnav-btn" data-tab="split">
+            <span class="bnav-icon">🏋️</span>
+            <span class="bnav-label">Split</span>
+        </button>
+        <button class="bnav-btn" data-tab="meals">
+            <span class="bnav-icon">🍽️</span>
+            <span class="bnav-label">Meals</span>
+        </button>
+        <button class="bnav-btn" data-tab="progress">
+            <span class="bnav-icon">📈</span>
+            <span class="bnav-label">Progress</span>
+        </button>
+    </nav>
+</div>
+
+<!-- TOAST -->
+<div class="toast hidden" id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
